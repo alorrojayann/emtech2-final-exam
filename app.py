@@ -6,7 +6,7 @@ from tensorflow.keras.models import load_model
 from tensorflow.keras.applications.resnet50 import preprocess_input
 
 # loading the model
-model = load_model('smoker_model.h5')
+model = load_model('smoker_model.h5', compile=False)
 
 # preprocessing function
 def preprocess_image(img, target_size=(300, 300)):
