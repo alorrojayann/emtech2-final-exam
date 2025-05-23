@@ -1,48 +1,39 @@
 import streamlit as st
-import numpy as np
-import cv2
-from PIL import Image
+import tensorflow as tf
 from tensorflow.keras.models import load_model
-from tensorflow.keras.applications.resnet50 import preprocess_input
+from tensorflow.keras.applications.mobilenet_v2 import preprocess_input
+from PIL import Image
+import numpy as np
 
 # loading the model
-model = load_model('smoker_model.h5', compile=False)
+@st.cache_resource
+def load_smoker_model():
+    model = load_model("smoker_model.h5")
+    return model
 
-# preprocessing function
-def preprocess_image(img, target_size=(224, 224)):
-    if img.mode != "RGB":
-        img = img.convert("RGB")
-    img = img.resize(target_size)
-    img_array = np.array(img)
+model = load_smoker_model()
+
+class_names = ['Not Smoking', 'Smoking']  # adjust order if your training labels were reversed
+
+st.title("Smoking Detection App")
+st.write("Upload an image to detect if a person is smoking.")
+
+uploaded_file = st.file_uploader("Choose an image...", type=["jpg", "jpeg", "png"])
+
+if uploaded_file is not None:
+    image = Image.open(uploaded_file).convert("RGB")
+    st.image(image, caption="Uploaded Image", use_column_width=True)
+
+    # preprocess the image
+    image = image.resize((224, 224))
+    img_array = np.array(image)
     img_array = preprocess_input(img_array)
     img_array = np.expand_dims(img_array, axis=0)
-    return img_array
 
-def predict(img):
-    processed = preprocess_image(img)
-    pred = model.predict(processed)[0][0]
-    return "Smoking" if pred > 0.5 else "Not Smoking", float(pred)
+    # prediction
+    prediction = model.predict(img_array)[0]
+    predicted_class = class_names[np.argmax(prediction)]
+    confidence = np.max(prediction)
 
-
-st.set_page_config(page_title="Smoking Detector", layout="centered")
-st.title("🚬 Smoking Detection")
-st.write("Upload an image or use your camera to detect if someone is smoking.")
-
-# image Upload
-uploaded_file = st.file_uploader("Choose an image", type=["jpg", "jpeg", "png"])
-
-# camera input
-camera_image = st.camera_input("Take a picture")
-
-# prediction and display
-if uploaded_file or camera_image:
-    st.subheader("Result:")
-    if uploaded_file:
-        image = Image.open(uploaded_file)
-    else:
-        image = Image.open(camera_image)
-
-    st.image(image, caption="Input Image", use_column_width=True)
-    label, confidence = predict(image)
-    st.success(f"Prediction: **{label}** ({confidence:.2f} confidence)")
-
+    st.markdown(f"### Prediction: `{predicted_class}`")
+    st.markdown(f"### Confidence: `{confidence:.2f}`")
