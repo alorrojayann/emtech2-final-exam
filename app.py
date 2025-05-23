@@ -8,7 +8,7 @@ import numpy as np
 # loading the model
 @st.cache_resource
 def load_smoker_model():
-    model = load_model("smoker_model.h5")
+    model = load_model("smoker_model.h5", compile=False)
     return model
 
 model = load_smoker_model()
