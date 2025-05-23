@@ -9,7 +9,7 @@ from tensorflow.keras.applications.resnet50 import preprocess_input
 model = load_model('smoker_model.h5', compile=False)
 
 # preprocessing function
-def preprocess_image(img, target_size=(300, 300)):
+def preprocess_image(img, target_size=(224, 224)):
     if img.mode != "RGB":
         img = img.convert("RGB")
     img = img.resize(target_size)
