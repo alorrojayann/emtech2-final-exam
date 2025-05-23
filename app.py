@@ -6,10 +6,14 @@ from PIL import Image
 import numpy as np
 
 # loading the model
-@st.cache_resource
-def load_smoker_model():
+from tensorflow.keras.models import load_model
+import streamlit as st
+
+try:
     model = load_model("smoker_model.h5", compile=False)
-    return model
+except Exception as e:
+    st.error(f"Failed to load model: {e}")
+    st.stop()
 
 model = load_smoker_model()
 
